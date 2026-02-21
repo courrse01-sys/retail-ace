@@ -1,4 +1,7 @@
-// Mock API service — replace with real REST API calls later
+// Mock API service — set BASE_URL to your Express backend to connect
+// Example: const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = ""; // Empty = use mock data below
+const USE_MOCK = !BASE_URL;
 
 export interface Product {
   id: string;
