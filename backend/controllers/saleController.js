@@ -36,6 +36,15 @@ exports.createSale = async (req, res, next) => {
     product.stock -= quantity;
     await product.save();
 
+    // Emit real-time event via Socket.IO
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("new_sale", {
+        sale,
+        updatedProduct: { id: product._id, name: product.name, stock: product.stock },
+      });
+    }
+
     res.status(201).json(sale);
   } catch (error) {
     next(error);
