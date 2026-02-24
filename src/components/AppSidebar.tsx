@@ -5,6 +5,9 @@ import {
   Sparkles,
   TrendingUp,
   Store,
+  Bell,
+  BarChart3,
+  Activity,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -19,12 +22,21 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
-const navItems = [
+const mainNav = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Sales", url: "/sales", icon: ShoppingCart },
+];
+
+const analyticsNav = [
   { title: "Analytics", url: "/analytics", icon: TrendingUp },
+  { title: "Product Performance", url: "/performance", icon: Activity },
+  { title: "Demand Forecast", url: "/forecast", icon: BarChart3 },
+];
+
+const insightsNav = [
   { title: "AI Insights", url: "/ai-insights", icon: Sparkles },
+  { title: "Smart Alerts", url: "/alerts", icon: Bell },
 ];
 
 export function AppSidebar() {
@@ -37,37 +49,45 @@ export function AppSidebar() {
           </div>
           <div>
             <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">RetailPulse</h2>
-            <p className="text-xs text-sidebar-muted">Optimization System</p>
+            <p className="text-xs text-sidebar-muted">AI-Powered Retail</p>
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="pt-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-muted text-[11px] font-semibold uppercase tracking-wider px-5 mb-1">
-            Menu
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-10 px-5">
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent rounded-lg transition-colors"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <item.icon className="w-[18px] h-[18px]" />
-                      <span className="text-sm">{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavGroup label="Core" items={mainNav} />
+        <NavGroup label="Analytics" items={analyticsNav} />
+        <NavGroup label="Intelligence" items={insightsNav} />
       </SidebarContent>
     </Sidebar>
+  );
+}
+
+function NavGroup({ label, items }: { label: string; items: typeof mainNav }) {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-sidebar-muted text-[11px] font-semibold uppercase tracking-wider px-5 mb-1">
+        {label}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton asChild className="h-10 px-5">
+                <NavLink
+                  to={item.url}
+                  end={item.url === "/"}
+                  className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent rounded-lg transition-colors"
+                  activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                >
+                  <item.icon className="w-[18px] h-[18px]" />
+                  <span className="text-sm">{item.title}</span>
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }

@@ -9,6 +9,9 @@ import Inventory from "@/pages/Inventory";
 import Sales from "@/pages/Sales";
 import Analytics from "@/pages/Analytics";
 import AIInsights from "@/pages/AIInsights";
+import Alerts from "@/pages/Alerts";
+import ProductPerformance from "@/pages/ProductPerformance";
+import Forecast from "@/pages/Forecast";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,9 @@ const App = () => (
             <Route path="/sales" element={<Sales />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/ai-insights" element={<AIInsights />} />
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/performance" element={<ProductPerformance />} />
+            <Route path="/forecast" element={<Forecast />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
