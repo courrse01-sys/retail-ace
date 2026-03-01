@@ -416,7 +416,57 @@ function generateAIInsights() {
   ];
 }
 
+// Mock users store
+const mockUsers = [
+  { id: "u1", name: "Admin User", email: "admin@retailpulse.com", password: "password123", role: "admin" as const },
+  { id: "u2", name: "Staff User", email: "staff@retailpulse.com", password: "password123", role: "staff" as const },
+];
+
 export const api = {
+  // Auth
+  async login(email: string, password: string) {
+    await delay(300);
+    if (USE_MOCK) {
+      const user = mockUsers.find(u => u.email === email && u.password === password);
+      if (!user) throw new Error("Invalid email or password");
+      const token = btoa(JSON.stringify({ id: user.id }));
+      return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+    }
+    const res = await fetch(`${BASE_URL}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.message || "Login failed"); }
+    return res.json();
+  },
+
+  async register(name: string, email: string, password: string, role = "staff") {
+    await delay(300);
+    if (USE_MOCK) {
+      if (mockUsers.find(u => u.email === email)) throw new Error("Email already registered");
+      const user = { id: `u${Date.now()}`, name, email, password, role: role as "admin" | "staff" };
+      mockUsers.push(user);
+      const token = btoa(JSON.stringify({ id: user.id }));
+      return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+    }
+    const res = await fetch(`${BASE_URL}/auth/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, password, role }) });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.message || "Registration failed"); }
+    return res.json();
+  },
+
+  async getMe(token: string) {
+    await delay(200);
+    if (USE_MOCK) {
+      try {
+        const { id } = JSON.parse(atob(token));
+        const user = mockUsers.find(u => u.id === id);
+        if (!user) throw new Error("User not found");
+        return { id: user.id, name: user.name, email: user.email, role: user.role };
+      } catch { throw new Error("Invalid token"); }
+    }
+    const res = await fetch(`${BASE_URL}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error("Not authorized");
+    const data = await res.json();
+    return data.user;
+  },
+
   // Products
   async getProducts(): Promise<Product[]> {
     await delay(200);
