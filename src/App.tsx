@@ -14,6 +14,10 @@ import AIInsights from "@/pages/AIInsights";
 import Alerts from "@/pages/Alerts";
 import ProductPerformance from "@/pages/ProductPerformance";
 import Forecast from "@/pages/Forecast";
+import ReorderOptimization from "@/pages/ReorderOptimization";
+import PriceOptimization from "@/pages/PriceOptimization";
+import BuyingPatterns from "@/pages/BuyingPatterns";
+import SeasonalTrends from "@/pages/SeasonalTrends";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -39,6 +43,10 @@ const App = () => (
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/performance" element={<ProductPerformance />} />
               <Route path="/forecast" element={<Forecast />} />
+              <Route path="/reorder" element={<ReorderOptimization />} />
+              <Route path="/pricing" element={<PriceOptimization />} />
+              <Route path="/patterns" element={<BuyingPatterns />} />
+              <Route path="/trends" element={<SeasonalTrends />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
