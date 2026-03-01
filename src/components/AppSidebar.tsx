@@ -8,6 +8,10 @@ import {
   Bell,
   BarChart3,
   Activity,
+  RefreshCw,
+  DollarSign,
+  ShoppingBasket,
+  Sun,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -39,6 +43,13 @@ const insightsNav = [
   { title: "Smart Alerts", url: "/alerts", icon: Bell },
 ];
 
+const aiNav = [
+  { title: "Reorder Optimization", url: "/reorder", icon: RefreshCw },
+  { title: "Price Optimization", url: "/pricing", icon: DollarSign },
+  { title: "Buying Patterns", url: "/patterns", icon: ShoppingBasket },
+  { title: "Seasonal Trends", url: "/trends", icon: Sun },
+];
+
 export function AppSidebar() {
   return (
     <Sidebar className="border-r-0">
@@ -58,6 +69,7 @@ export function AppSidebar() {
         <NavGroup label="Core" items={mainNav} />
         <NavGroup label="Analytics" items={analyticsNav} />
         <NavGroup label="Intelligence" items={insightsNav} />
+        <NavGroup label="AI Engine" items={aiNav} />
       </SidebarContent>
     </Sidebar>
   );

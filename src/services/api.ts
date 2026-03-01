@@ -90,7 +90,48 @@ export interface AdvancedAnalytics {
   };
 }
 
-// Mock data
+export interface ReorderRecommendation {
+  productId: string;
+  productName: string;
+  sku: string;
+  currentStock: number;
+  recommendedQty: number;
+  forecastDemand: number;
+  leadTimeDays: number;
+  safetyStock: number;
+  urgency: "critical" | "high" | "medium" | "low";
+  reason: string;
+}
+
+export interface PriceSuggestion {
+  productId: string;
+  productName: string;
+  category: string;
+  currentPrice: number;
+  suggestedPrice: number;
+  changePercent: number;
+  action: "increase" | "decrease";
+  expectedImpact: string;
+  reason: string;
+}
+
+export interface BuyingPattern {
+  productA: string;
+  productB: string;
+  confidence: number;
+  occurrences: number;
+  suggestion: string;
+}
+
+export interface SeasonalTrend {
+  productName: string;
+  patternType: "weekly" | "monthly" | "seasonal";
+  description: string;
+  peakPeriod: string;
+  upliftPercent: number;
+  data: { label: string; value: number }[];
+}
+
 const mockProducts: Product[] = [
   { id: "1", name: "Organic Coffee Beans", sku: "COF-001", category: "Beverages", price: 14.99, cost: 8.50, stock: 45, minStock: 20, lastRestocked: "2026-02-18" },
   { id: "2", name: "Whole Wheat Bread", sku: "BRD-001", category: "Bakery", price: 4.49, cost: 2.10, stock: 8, minStock: 15, lastRestocked: "2026-02-20" },
@@ -566,5 +607,129 @@ export const api = {
   async getAIInsights() {
     await delay(400);
     return generateAIInsights();
+  },
+
+  // Reorder Optimization
+  async getReorderRecommendations(): Promise<ReorderRecommendation[]> {
+    await delay(350);
+    const perf = computePerformance();
+    return perf.map(p => {
+      const forecastDemand = Math.round(p.salesVelocity * 7);
+      const leadTimeDays = Math.floor(3 + Math.random() * 5);
+      const safetyStock = Math.ceil(p.salesVelocity * 2);
+      const demandDuringLead = Math.ceil(p.salesVelocity * leadTimeDays);
+      const reorderPoint = demandDuringLead + safetyStock;
+      const recommendedQty = Math.max(0, reorderPoint + forecastDemand - p.stock);
+      let urgency: "critical" | "high" | "medium" | "low" = "low";
+      if (p.stock <= safetyStock) urgency = "critical";
+      else if (p.stock <= reorderPoint) urgency = "high";
+      else if (p.stock <= reorderPoint * 1.5) urgency = "medium";
+
+      const reasons: string[] = [];
+      if (urgency === "critical") reasons.push("Stock below safety threshold");
+      if (forecastDemand > p.stock) reasons.push("Expected demand spike");
+      if (leadTimeDays > 4) reasons.push("Supplier delay risk");
+      if (reasons.length === 0) reasons.push("Stock levels adequate for current demand");
+
+      return {
+        productId: p.id, productName: p.name, sku: p.sku, currentStock: p.stock,
+        recommendedQty, forecastDemand, leadTimeDays, safetyStock, urgency,
+        reason: reasons.join(" + ") + `. Reorder point: ${reorderPoint} units.`,
+      };
+    }).sort((a, b) => { const o = { critical: 0, high: 1, medium: 2, low: 3 }; return o[a.urgency] - o[b.urgency]; });
+  },
+
+  // Price Optimization
+  async getPriceSuggestions(): Promise<PriceSuggestion[]> {
+    await delay(300);
+    const perf = computePerformance();
+    const suggestions: PriceSuggestion[] = [];
+
+    perf.forEach(p => {
+      if (p.salesVelocity < 0.5 && p.stock > 10) {
+        const discount = Math.round(5 + Math.random() * 10);
+        const expectedSalesLift = Math.round(discount * 2.2 + Math.random() * 5);
+        suggestions.push({
+          productId: p.id, productName: p.name, category: p.category,
+          currentPrice: p.price, suggestedPrice: +(p.price * (1 - discount / 100)).toFixed(2),
+          changePercent: discount, action: "decrease",
+          expectedImpact: `Sales expected to increase by +${expectedSalesLift}%`,
+          reason: `Slow-moving item (${p.salesVelocity} units/day) with ${p.stock} units in stock. Price reduction will accelerate turnover.`,
+        });
+      } else if (p.salesVelocity > 1.5 && p.profitMargin < 40) {
+        const increase = Math.round(3 + Math.random() * 8);
+        suggestions.push({
+          productId: p.id, productName: p.name, category: p.category,
+          currentPrice: p.price, suggestedPrice: +(p.price * (1 + increase / 100)).toFixed(2),
+          changePercent: increase, action: "increase",
+          expectedImpact: `Revenue per unit increases by $${(p.price * increase / 100).toFixed(2)} with minimal demand drop`,
+          reason: `High-demand item (${p.salesVelocity} units/day) with room for margin improvement (current: ${p.profitMargin}%).`,
+        });
+      }
+    });
+    return suggestions;
+  },
+
+  // Buying Patterns
+  async getBuyingPatterns(): Promise<BuyingPattern[]> {
+    await delay(300);
+    return [
+      { productA: "Fresh Milk 1L", productB: "Whole Wheat Bread", confidence: 72, occurrences: 48, suggestion: "Bundle deal" },
+      { productA: "Organic Coffee Beans", productB: "Almond Butter", confidence: 58, occurrences: 31, suggestion: "Cross-sell" },
+      { productA: "Greek Yogurt 500g", productB: "Fresh Milk 1L", confidence: 65, occurrences: 38, suggestion: "Shelf placement" },
+      { productA: "Dark Chocolate Bar", productB: "Sparkling Water 6-pack", confidence: 44, occurrences: 22, suggestion: "Promo combo" },
+      { productA: "Avocados (pack of 3)", productB: "Whole Wheat Bread", confidence: 51, occurrences: 27, suggestion: "Cross-sell" },
+      { productA: "Organic Coffee Beans", productB: "Dark Chocolate Bar", confidence: 62, occurrences: 35, suggestion: "Bundle deal" },
+    ];
+  },
+
+  // Seasonal Trends
+  async getSeasonalTrends(): Promise<SeasonalTrend[]> {
+    await delay(350);
+    return [
+      {
+        productName: "Sparkling Water 6-pack",
+        patternType: "weekly",
+        description: "Demand increases every Saturday — weekend entertaining drives purchases",
+        peakPeriod: "Saturday",
+        upliftPercent: 45,
+        data: [
+          { label: "Mon", value: 8 }, { label: "Tue", value: 6 }, { label: "Wed", value: 7 },
+          { label: "Thu", value: 9 }, { label: "Fri", value: 14 }, { label: "Sat", value: 22 }, { label: "Sun", value: 16 },
+        ],
+      },
+      {
+        productName: "Dark Chocolate Bar",
+        patternType: "monthly",
+        description: "Sales spike in the last week of every month — likely payday correlation",
+        peakPeriod: "Week 4",
+        upliftPercent: 38,
+        data: [
+          { label: "Wk1", value: 12 }, { label: "Wk2", value: 14 }, { label: "Wk3", value: 11 }, { label: "Wk4", value: 24 },
+        ],
+      },
+      {
+        productName: "Fresh Milk 1L",
+        patternType: "weekly",
+        description: "Consistent weekday demand with dip on Sundays — household staple pattern",
+        peakPeriod: "Tuesday",
+        upliftPercent: 22,
+        data: [
+          { label: "Mon", value: 18 }, { label: "Tue", value: 22 }, { label: "Wed", value: 20 },
+          { label: "Thu", value: 19 }, { label: "Fri", value: 17 }, { label: "Sat", value: 15 }, { label: "Sun", value: 10 },
+        ],
+      },
+      {
+        productName: "Organic Coffee Beans",
+        patternType: "seasonal",
+        description: "Demand surges in winter months — hot beverage season effect",
+        peakPeriod: "December–February",
+        upliftPercent: 62,
+        data: [
+          { label: "Sep", value: 30 }, { label: "Oct", value: 38 }, { label: "Nov", value: 52 },
+          { label: "Dec", value: 68 }, { label: "Jan", value: 72 }, { label: "Feb", value: 65 },
+        ],
+      },
+    ];
   },
 };
